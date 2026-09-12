@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>시간의 요정</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #efe9ff;
+    --ink-dim: #b9aee0;
+    --glow: #d9c6ff;
+    --pink: #ffb3d6;
+    --lavender: #b8a4ff;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-family: 'Gaegu', 'Malgun Gothic', sans-serif;
+    color: var(--ink);
+    background: radial-gradient(ellipse at 50% 0%, #3a2465 0%, #241542 38%, #150c2b 75%, #0c0720 100%);
+    position: relative;
+  }
+
+  /* ---------- 밤하늘 별 ---------- */
+  .sky {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    opacity: 0.2;
+    animation: twinkle ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.15; transform: scale(1); }
+    50% { opacity: 0.9; transform: scale(1.3); }
+  }
+
+  /* ---------- 카드 ---------- */
+  .card {
+    position: relative;
+    z-index: 1;
+    width: 380px;
+    padding: 34px 32px 28px;
+    border-radius: 28px;
+    background: rgba(255,255,255,0.055);
+    border: 1px solid rgba(255,255,255,0.14);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.03) inset, 0 30px 70px rgba(10,5,25,0.55), 0 0 60px rgba(185,150,255,0.10);
+    text-align: center;
+    transition: box-shadow 1.2s ease;
+  }
+  .card.pulse {
+    animation: cardPulse 1.8s ease;
+  }
+  @keyframes cardPulse {
+    0% { box-shadow: 0 0 0 1px rgba(255,255,255,0.03) inset, 0 30px 70px rgba(10,5,25,0.55), 0 0 60px rgba(185,150,255,0.10); }
+    30% { box-shadow: 0 0 0 1px rgba(255,255,255,0.05) inset, 0 30px 70px rgba(10,5,25,0.55), 0 0 100px rgba(255,179,214,0.35); }
+    100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.03) inset, 0 30px 70px rgba(10,5,25,0.55), 0 0 60px rgba(185,150,255,0.10); }
+  }
+
+  .header { position: relative; margin-bottom: 6px; }
+  h1 {
+    font-family: 'Jua', sans-serif;
+    font-size: 22px;
+    font-weight: 400;
+    margin: 0;
+    letter-spacing: 1px;
+    color: var(--glow);
+    text-shadow: 0 0 18px rgba(217,198,255,0.5);
+  }
+  .subtitle {
+    font-size: 15px;
+    color: var(--ink-dim);
+    margin-top: 4px;
+  }
+
+  .sound-toggle {
+    position: absolute;
+    top: -6px;
+    right: -4px;
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0.7;
+    padding: 6px;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .sound-toggle:hover { opacity: 1; transform: scale(1.1); }
+
+  /* ---------- 요정 무대 ---------- */
+  .fairy-stage {
+    position: relative;
+    height: 168px;
+    margin: 6px 0 4px;
+  }
+  .bubble {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 280px;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.9);
+    color: #3a2a5c;
+    border-radius: 18px;
+    font-family: 'Gaegu', sans-serif;
+    font-size: 16px;
+    line-height: 1.35;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    opacity: 0;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    z-index: 2;
+  }
+  .bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 8px 7px 0 7px;
+    border-style: solid;
+    border-color: rgba(255,255,255,0.9) transparent transparent transparent;
+  }
+  .bubble.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .bubble.hide { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+  .bubble.milestone {
+    background: linear-gradient(135deg, #ffe9b0, #ffd1ea);
+    box-shadow: 0 8px 30px rgba(255,190,220,0.4);
+  }
+  .bubble.milestone::after {
+    border-color: #ffd1ea transparent transparent transparent;
+  }
+
+  .fairy-wrap {
+    position: absolute;
+    left: 50%;
+    top: 58px;
+    width: 120px;
+    height: 120px;
+    transform: translateX(-50%);
+    animation: floaty 3.4s ease-in-out infinite;
+  }
+  @keyframes floaty {
+    0%, 100% { transform: translateX(-50%) translateY(0) rotate(-1.5deg); }
+    50% { transform: translateX(-50%) translateY(-10px) rotate(1.5deg); }
+  }
+  .fairy-svg { width: 100%; height: 100%; overflow: visible; }
+  .wing { transform-box: fill-box; transform-origin: center; animation: flutter 0.7s ease-in-out infinite alternate; }
+  .wing-right { animation-delay: 0.1s; }
+  @keyframes flutter {
+    0% { transform: scaleX(1) scaleY(1); }
+    100% { transform: scaleX(0.82) scaleY(1.05); }
+  }
+  .wand-star {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: starPulse 1.6s ease-in-out infinite;
+  }
+  @keyframes starPulse {
+    0%, 100% { opacity: 0.7; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.15); }
+  }
+
+  .sparkle {
+    position: absolute;
+    left: 71%;
+    top: 20%;
+    color: #ffe9b0;
+    font-size: 14px;
+    pointer-events: none;
+    animation: sparkleUp 1.8s ease-out forwards;
+    z-index: 1;
+  }
+  @keyframes sparkleUp {
+    0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+    15% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--dx), -60px) scale(1.1); }
+  }
+
+  /* ---------- 시간 표시 ---------- */
+  .display {
+    font-family: 'Jua', sans-serif;
+    font-variant-numeric: tabular-nums;
+    font-size: 46px;
+    letter-spacing: 1px;
+    color: var(--ink);
+    text-shadow: 0 0 24px rgba(217,198,255,0.35);
+    margin-bottom: 22px;
+  }
+  .display .ms { font-size: 24px; color: var(--ink-dim); }
+
+  /* ---------- 버튼 ---------- */
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  button.ctrl {
+    flex: 1;
+    padding: 13px 0;
+    border: none;
+    border-radius: 999px;
+    font-family: 'Gaegu', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.12s ease, opacity 0.15s ease, box-shadow 0.2s ease;
+  }
+  button.ctrl:active { transform: scale(0.95); }
+  button.ctrl:disabled { opacity: 0.35; cursor: not-allowed; }
+  #startStop {
+    background: linear-gradient(135deg, var(--lavender), var(--pink));
+    color: #2c1a4a;
+    box-shadow: 0 8px 22px rgba(184,164,255,0.35);
+  }
+  #capture, #reset {
+    background: rgba(255,255,255,0.08);
+    color: var(--ink);
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+  #capture:hover:not(:disabled), #reset:hover:not(:disabled) {
+    background: rgba(255,255,255,0.14);
+  }
+
+  /* ---------- 순간 기록 ---------- */
+  .moments {
+    max-height: 130px;
+    overflow-y: auto;
+    text-align: left;
+  }
+  .moments::-webkit-scrollbar { width: 5px; }
+  .moments::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+  .moment-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 4px;
+    font-size: 14px;
+    color: var(--ink-dim);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-variant-numeric: tabular-nums;
+  }
+  .moment-item .glyph { color: var(--pink); }
+  .moment-item span:last-child { margin-left: auto; color: var(--ink); }
+</style>
+</head>
+<body>
+  <div class="sky" id="sky"></div>
+
+  <div class="card" id="card">
+    <div class="header">
+      <button class="sound-toggle" id="soundToggle" title="잔잔한 종소리 켜기/끄기">🔕</button>
+      <h1>🧚 시간의 요정</h1>
+      <div class="subtitle">재촉하지 않아요, 그저 함께 있을게요</div>
+    </div>
+
+    <div class="fairy-stage" id="fairyStage">
+      <div class="bubble" id="bubble">제가 함께 있어요.</div>
+      <div class="fairy-wrap">
+        <svg class="fairy-svg" viewBox="0 0 120 120">
+          <defs>
+            <radialGradient id="bodyGlow" cx="50%" cy="40%" r="60%">
+              <stop offset="0%" stop-color="#fff6ff"/>
+              <stop offset="55%" stop-color="#e6c9ff"/>
+              <stop offset="100%" stop-color="#b98bff" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="wingGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+              <stop offset="100%" stop-color="#c9b8ff" stop-opacity="0.2"/>
+            </linearGradient>
+          </defs>
+          <ellipse class="wing wing-left" cx="42" cy="55" rx="22" ry="14" fill="url(#wingGrad)" transform="rotate(-25 42 55)"/>
+          <ellipse class="wing wing-right" cx="78" cy="55" rx="22" ry="14" fill="url(#wingGrad)" transform="rotate(25 78 55)"/>
+          <circle cx="60" cy="58" r="34" fill="url(#bodyGlow)"/>
+          <circle cx="60" cy="60" r="11" fill="#fff" opacity="0.95"/>
+          <line x1="60" y1="60" x2="86" y2="34" stroke="#ffe9b0" stroke-width="2" stroke-linecap="round"/>
+          <path class="wand-star" d="M86 26 l3 7 l7 1 l-5 5 l1 7 l-6-3 l-6 3 l1-7 l-5-5 l7-1 z" fill="#ffe9b0"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="display">
+      <span id="time">00:00:00</span><span class="ms" id="ms">.00</span>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl" id="capture" disabled>이 순간 담기</button>
+      <button class="ctrl" id="startStop">함께 시작하기</button>
+      <button class="ctrl" id="reset">새로 시작</button>
+    </div>
+
+    <div class="moments" id="moments"></div>
+  </div>
+
+<script>
+  /* ---------------- 밤하늘 별 생성 ---------------- */
+  const sky = document.getElementById('sky');
+  const STAR_COUNT = 70;
+  for (let i = 0; i < STAR_COUNT; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2 + 1;
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.top = Math.random() * 100 + 'vh';
+    s.style.animationDuration = (2 + Math.random() * 3) + 's';
+    s.style.animationDelay = (Math.random() * 3) + 's';
+    sky.appendChild(s);
+  }
+
+  /* ---------------- 상태 ---------------- */
+  let startTime = 0;
+  let elapsed = 0;
+  let running = false;
+  let hasStartedOnce = false;
+  let rafId = null;
+  let momentCount = 0;
+  let lastMilestone = 0;
+  let ambientTimerId = null;
+  let sparkleTimerId = null;
+  let lastAmbientIndex = -1;
+  let soundEnabled = false;
+  let audioCtx = null;
+
+  const timeEl = document.getElementById('time');
+  const msEl = document.getElementById('ms');
+  const startStopBtn = document.getElementById('startStop');
+  const captureBtn = document.getElementById('capture');
+  const resetBtn = document.getElementById('reset');
+  const momentsEl = document.getElementById('moments');
+  const bubble = document.getElementById('bubble');
+  const card = document.getElementById('card');
+  const fairyStage = document.getElementById('fairyStage');
+  const soundToggle = document.getElementById('soundToggle');
+
+  /* ---------------- 메시지 ---------------- */
+  const AMBIENT_MESSAGES = [
+    '제가 함께 있어요.',
+    '지금 이 순간, 잘하고 있어요.',
+    '당신의 속도대로 가도 괜찮아요.',
+    '서두르지 않아도 돼요.',
+    '시간은 당신 편이에요.',
+    '숨을 한 번 쉬어볼까요.',
+    '여기, 조용히 곁에 있을게요.',
+    '잘 흘러가고 있어요.',
+    '괜찮아요, 그대로도 충분해요.'
+  ];
+  const MILESTONE_TAILS = [
+    '여기까지 오느라 애쓰셨어요.',
+    '꾸준함이 참 예뻐요.',
+    '당신은 충분히 잘하고 있어요.',
+    '무리하지 않아도 돼요, 천천히 가요.',
+    '함께한 시간이 쌓이고 있어요.'
+  ];
+
+  function pickAmbient() {
+    let idx;
+    do { idx = Math.floor(Math.random() * AMBIENT_MESSAGES.length); }
+    while (idx === lastAmbientIndex && AMBIENT_MESSAGES.length > 1);
+    lastAmbientIndex = idx;
+    return AMBIENT_MESSAGES[idx];
+  }
+
+  function showMessage(text, { big = false, pulse = false } = {}) {
+    bubble.classList.remove('show');
+    bubble.classList.add('hide');
+    setTimeout(() => {
+      bubble.textContent = text;
+      bubble.classList.toggle('milestone', big);
+      bubble.classList.remove('hide');
+      bubble.classList.add('show');
+    }, 280);
+    if (pulse) {
+      card.classList.remove('pulse');
+      void card.offsetWidth;
+      card.classList.add('pulse');
+    }
+  }
+
+  function restartAmbientCycle() {
+    clearInterval(ambientTimerId);
+    ambientTimerId = setInterval(() => {
+      if (running) showMessage(pickAmbient());
+    }, 28000);
+  }
+
+  /* ---------------- 사운드 ---------------- */
+  function ensureAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function playChime() {
+    if (!soundEnabled) return;
+    ensureAudio();
+    const now = audioCtx.currentTime;
+    [880, 1318.5].forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, now + i * 0.12);
+      gain.gain.linearRampToValueAtTime(0.14, now + i * 0.12 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.12 + 1.6);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now + i * 0.12);
+      osc.stop(now + i * 0.12 + 1.7);
+    });
+  }
+
+  soundToggle.addEventListener('click', () => {
+    soundEnabled = !soundEnabled;
+    soundToggle.textContent = soundEnabled ? '🔔' : '🔕';
+    if (soundEnabled) { ensureAudio(); playChime(); }
+  });
+
+  /* ---------------- 반짝임 ---------------- */
+  function spawnSparkle() {
+    const s = document.createElement('div');
+    s.className = 'sparkle';
+    s.textContent = Math.random() > 0.5 ? '✦' : '✧';
+    const dx = (Math.random() * 40 - 20).toFixed(0) + 'px';
+    s.style.setProperty('--dx', dx);
+    s.style.left = (68 + Math.random() * 8) + '%';
+    s.style.top = (16 + Math.random() * 8) + '%';
+    fairyStage.appendChild(s);
+    setTimeout(() => s.remove(), 1900);
+  }
+
+  /* ---------------- 시간 포맷 ---------------- */
+  function format(ms) {
+    const totalMs = Math.floor(ms);
+    const hours = Math.floor(totalMs / 3600000);
+    const minutes = Math.floor((totalMs % 3600000) / 60000);
+    const seconds = Math.floor((totalMs % 60000) / 1000);
+    const centis = Math.floor((totalMs % 1000) / 10);
+    const pad = (n, len = 2) => String(n).padStart(len, '0');
+    return { main: `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`, ms: `.${pad(centis)}` };
+  }
+
+  function currentElapsed() {
+    return running ? elapsed + (performance.now() - startTime) : elapsed;
+  }
+
+  function render() {
+    const now = currentElapsed();
+    const { main, ms } = format(now);
+    timeEl.textContent = main;
+    msEl.textContent = ms;
+
+    const elapsedSec = now / 1000;
+    const milestoneIdx = Math.floor(elapsedSec / 300);
+    if (running && milestoneIdx > lastMilestone) {
+      lastMilestone = milestoneIdx;
+      const minutes = milestoneIdx * 5;
+      const tail = MILESTONE_TAILS[Math.floor(Math.random() * MILESTONE_TAILS.length)];
+      showMessage(`${minutes}분이 흘렀어요. ${tail}`, { big: true, pulse: true });
+      playChime();
+    }
+  }
+
+  function tick() {
+    render();
+    rafId = requestAnimationFrame(tick);
+  }
+
+  /* ---------------- 컨트롤 ---------------- */
+  function start() {
+    running = true;
+    startTime = performance.now();
+    startStopBtn.textContent = '잠시 멈추기';
+    captureBtn.disabled = false;
+    ensureAudio();
+    tick();
+    sparkleTimerId = setInterval(spawnSparkle, 550);
+    restartAmbientCycle();
+    showMessage(hasStartedOnce ? '다시 함께 시작해요.' : '이제부터 함께 걸어요.');
+    hasStartedOnce = true;
+  }
+
+  function stop() {
+    running = false;
+    elapsed += performance.now() - startTime;
+    cancelAnimationFrame(rafId);
+    clearInterval(sparkleTimerId);
+    clearInterval(ambientTimerId);
+    startStopBtn.textContent = '함께 시작하기';
+    captureBtn.disabled = true;
+    render();
+    showMessage('잠시 쉬어가도 괜찮아요. 제가 기다릴게요.');
+  }
+
+  function reset() {
+    running = false;
+    elapsed = 0;
+    lastMilestone = 0;
+    hasStartedOnce = false;
+    momentCount = 0;
+    cancelAnimationFrame(rafId);
+    clearInterval(sparkleTimerId);
+    clearInterval(ambientTimerId);
+    startStopBtn.textContent = '함께 시작하기';
+    captureBtn.disabled = true;
+    momentsEl.innerHTML = '';
+    render();
+    showMessage('새로운 시간을 함께 시작해봐요.');
+  }
+
+  function captureMoment() {
+    momentCount++;
+    const { main, ms } = format(currentElapsed());
+    const item = document.createElement('div');
+    item.className = 'moment-item';
+    item.innerHTML = `<span class="glyph">✦</span><span>순간 ${momentCount}</span><span>${main}${ms}</span>`;
+    momentsEl.prepend(item);
+    showMessage('이 순간을 마음에 담아둘게요.');
+  }
+
+  startStopBtn.addEventListener('click', () => { running ? stop() : start(); });
+  captureBtn.addEventListener('click', captureMoment);
+  resetBtn.addEventListener('click', reset);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') { e.preventDefault(); startStopBtn.click(); }
+    else if (e.code === 'KeyL' && !captureBtn.disabled) captureMoment();
+    else if (e.code === 'KeyR') reset();
+  });
+
+  render();
+  setTimeout(() => showMessage('제가 함께 있어요.'), 400);
+</script>
+</body>
+</html>
